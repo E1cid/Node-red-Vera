@@ -1,0 +1,141 @@
+[
+    {
+        "id": "680d28ae.8a163",
+        "type": "http request",
+        "z": "8659fc6b.981b4",
+        "name": "Get request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "query",
+        "url": "http://192.168.1.11:3480/data_request",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 760,
+        "y": 1020,
+        "wires": [
+            [
+                "cb471442.5d60c8"
+            ]
+        ]
+    },
+    {
+        "id": "688830f.c57775",
+        "type": "function",
+        "z": "8659fc6b.981b4",
+        "name": "",
+        "func": "let types = {\n    \"dimming\":[\"urn:upnp-org:serviceId:Dimming1\",\"SetLoadLevelTarget\",\"newLoadlevelTarget\"],\n    \"binary\":[\"urn:upnp-org:serviceId:SwitchPower1\",\"SetTarget\",\"newTargetValue\"],\n    \"scene\":[\"urn:micasaverde-com:serviceId:HomeAutomationGateway1\",\"RunScene\",\"SceneNum\"],\n    \"colour\":[\"urn:micasaverde-com:serviceId:Color1\",{\"tt\":\"SetColor\",\"hs\":\"SetColorRGB\",\"ct\":\"SetColorTemp\"},{\"tt\":\"newColorTarget\",\"hs\":\"newColorRGBTarget\",\"ct\":\"newColorTempTarget\"}] \t\n}\nfunction binaryPayload(device, type, turnOn, payload) {\n    payload.id = \"action\";\n    payload.serviceId = type[0];\n    payload.DeviceNum = device;\n    payload.action = type[1];\n    payload[type[2]] = (turnOn === true ? 1 : 0);\nreturn payload;\n}\n\nfunction dimmingPayload(device, type, level, payload) {\n    payload.id = \"action\";\n    payload.serviceId = type[0];\n    payload.DeviceNum = device;\n    payload.action = type[1];\n    payload[type[2]] = level;\nreturn payload;\n}\nfunction scenePayload(device, type, turnOn, payload) {\n    payload.id = \"action\";\n    payload.serviceId = type[0];\n    payload.action = type[1];\n    payload[type[2]] = (turnOn === true ? device[0] : (device[2] || device[0]));\nreturn payload;\n}\n\nfunction rgbPayload(device, types, msg, payload) { \n    if(msg.on === true && msg.meta.changes.on === false && msg.meta[\"input\"].on === true){\n        payload =  binaryPayload(device[0], types[\"binary\"], msg.on, {});\n    }else if (msg.meta.changes.percentage && msg.on === true){\n        payload = dimmingPayload(device[0], types[\"dimming\"], msg.percentage, {});\n    }else if (msg.on === true && msg.colormode === \"hs\"){\n        payload.id = \"action\";\n        payload.serviceId = types[\"colour\"][0];\n        payload.DeviceNum = device[0];\n        payload.action = types[\"colour\"][1][\"hs\"];\n        payload[types[\"colour\"][2][\"hs\"]] =   msg.rgb[0] + \",\" + msg.rgb[1] + \",\" + msg.rgb[2];   \n    }else if (msg.on === true && msg.colormode === \"ct\"){\n        payload.id = \"action\";\n        payload.serviceId = types[\"colour\"][0];\n        payload.DeviceNum = device[0];\n        payload.action = types[\"colour\"][1][\"ct\"];\n        payload[types[\"colour\"][2][\"ct\"]] = (msg.ct < 291 ? (device[3] || \"D150\") : (device[2] || \"W100\"));// + msg.rgb[0] + \",3=\" + msg.rgb[1] + \",4=\" + msg.rgb[2];   \n    }\nreturn payload;\n}\n\nmsg.topic = msg.topic.split(\"#\").map(Function.prototype.call, String.prototype.trim);\nmsg.hold = msg.payload;\nmsg.payload = {};\nlet type = msg.topic[1] || \"binary\";\nif(msg.topic[1] === \"scene\"){\n    msg.payload = scenePayload(msg.topic, types[\"scene\"], msg.on, {});\n}else if (msg.topic[1] === \"binary\" || msg.percentage === 0 || msg.on === false){\n    msg.payload =  binaryPayload(msg.topic[0], types[\"binary\"], msg.on, {});\n}else if(msg.topic[1] ===\"dimming\"){\n    msg.payload = dimmingPayload(msg.topic[0], types[\"dimming\"], msg.percentage, {});\n}else if (msg.topic[1] === \"colour\"){\n    msg.payload = rgbPayload(msg.topic, types, msg, {});\n}\nif (Object.keys(msg.payload).length < 1){\n    msg.payload = {\n        \"id\":\"variableget\",\n        \"DeviceNum\":msg.topic[0],\n        \"serviceId\":types[msg.topic[1]][0],\n        \"Variable\":\"Status\"\n        }\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 630,
+        "y": 960,
+        "wires": [
+            [
+                "680d28ae.8a163"
+            ]
+        ]
+    },
+    {
+        "id": "f4e0f848.a606a8",
+        "type": "amazon-echo-device",
+        "z": "8659fc6b.981b4",
+        "name": "lounge 2",
+        "topic": "31#scene#21",
+        "x": 384,
+        "y": 1033.333251953125,
+        "wires": [
+            [
+                "688830f.c57775"
+            ]
+        ]
+    },
+    {
+        "id": "cd0ae070.e98378",
+        "type": "amazon-echo-device",
+        "z": "8659fc6b.981b4",
+        "name": "lounge 1",
+        "topic": "8#dimming",
+        "x": 390,
+        "y": 1000,
+        "wires": [
+            [
+                "688830f.c57775"
+            ]
+        ]
+    },
+    {
+        "id": "a605448.899d8b8",
+        "type": "amazon-echo-device",
+        "z": "8659fc6b.981b4",
+        "name": "bedroom four",
+        "topic": "199#colour#W100#D150",
+        "x": 390,
+        "y": 960,
+        "wires": [
+            [
+                "688830f.c57775"
+            ]
+        ]
+    },
+    {
+        "id": "21ca89ff.b0f6ce",
+        "type": "amazon-echo-device",
+        "z": "8659fc6b.981b4",
+        "name": "app safe",
+        "topic": "164#binary",
+        "x": 430,
+        "y": 920,
+        "wires": [
+            [
+                "688830f.c57775"
+            ]
+        ]
+    },
+    {
+        "id": "de7838ac.ebead",
+        "type": "amazon-echo-hub",
+        "z": "8659fc6b.981b4",
+        "port": "8980",
+        "processinput": "0",
+        "discovery": true,
+        "x": 150,
+        "y": 860,
+        "wires": [
+            [
+                "92daf72c.e52e9",
+                "4d566251.fb0fd4",
+                "6e25f043.b7a9e8",
+                "58f400e1.ad34a8",
+                "8c4e3afb.aeadd8",
+                "c9ec9262.5a9e1",
+                "1e62d298.99d4a5",
+                "d784f9e0.488ae8",
+                "d04ab3c9.7d4f28",
+                "54787300.07eb24",
+                "fe079d0f.53e5f",
+                "a2ab34f0.dd5398",
+                "92356011.33636",
+                "21ca89ff.b0f6ce",
+                "cd0ae070.e98378",
+                "f46b27d2.3bf7e",
+                "9e41f76e.b159a8",
+                "b488239e.ca86a8",
+                "d2e4083f.3b7f58",
+                "d184e8ac.29afd",
+                "563fa9e2.8119e",
+                "518251b1.190bd",
+                "fc62103c.548cb8",
+                "c5cb5526.2132d",
+                "81ffa6fb.83fe88",
+                "4f6fc1c7.c82b7",
+                "4b998977.d607d8",
+                "6340c6bf.776fd8",
+                "24497419.df043c",
+                "a605448.899d8b8"
+            ]
+        ]
+    }
+]
