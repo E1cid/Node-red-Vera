@@ -1,5 +1,22 @@
 [
     {
+        "id": "de7838ac.ebead",
+        "type": "amazon-echo-hub",
+        "z": "8659fc6b.981b4",
+        "port": "8980",
+        "processinput": "0",
+        "discovery": true,
+        "x": 150,
+        "y": 840,
+        "wires": [
+            [
+                "cd0ae070.e98378",
+                "a605448.899d8b8",
+                "21ca89ff.b0f6ce"
+            ]
+        ]
+    },
+    {
         "id": "a605448.899d8b8",
         "type": "amazon-echo-device",
         "z": "8659fc6b.981b4",
@@ -56,50 +73,6 @@
         "wires": [
             [
                 "680d28ae.8a163"
-            ]
-        ]
-    },
-    {
-        "id": "de7838ac.ebead",
-        "type": "amazon-echo-hub",
-        "z": "8659fc6b.981b4",
-        "port": "8980",
-        "processinput": "0",
-        "discovery": true,
-        "x": 150,
-        "y": 840,
-        "wires": [
-            [
-                "cd0ae070.e98378",
-                "a605448.899d8b8",
-                "21ca89ff.b0f6ce",
-                "92daf72c.e52e9",
-                "4d566251.fb0fd4",
-                "6e25f043.b7a9e8",
-                "58f400e1.ad34a8",
-                "8c4e3afb.aeadd8",
-                "c9ec9262.5a9e1",
-                "1e62d298.99d4a5",
-                "d784f9e0.488ae8",
-                "d04ab3c9.7d4f28",
-                "54787300.07eb24",
-                "fe079d0f.53e5f",
-                "a2ab34f0.dd5398",
-                "92356011.33636",
-                "f46b27d2.3bf7e",
-                "9e41f76e.b159a8",
-                "b488239e.ca86a8",
-                "d2e4083f.3b7f58",
-                "d184e8ac.29afd",
-                "563fa9e2.8119e",
-                "518251b1.190bd",
-                "fc62103c.548cb8",
-                "c5cb5526.2132d",
-                "81ffa6fb.83fe88",
-                "4f6fc1c7.c82b7",
-                "4b998977.d607d8",
-                "6340c6bf.776fd8",
-                "24497419.df043c"
             ]
         ]
     },
